@@ -8,7 +8,7 @@ Objective: To build a multi-class classification model that predicts corporate c
 1. cleaner.py - contains functionality for displaying data diagnostic reports with respect to data cleaning, and perform cleaning actions.
 2. seperator.py - contains functionality to split and classify variables into their respective categories (i.e. dependent, continuous, categorical, binary etc.)
 3. preprocessor.py - contains functionality for transforming variables to prepare them for modeling (i.e. standardization, one-hot encoding etc.)
-4. model.py - containins functionality for running and evaluating sklearn classifiers, as well as functionality for model stacking and model stacking evaluation.
+4. model.py - contains functionality for running and evaluating sklearn classifiers, as well as functionality for model stacking and stacked model evaluation.
 
 **Jupyter Notebooks**
 1. data_cleaning.ipynb - in this notebook the raw input data is formatted and cleaned. 
@@ -18,13 +18,13 @@ Objective: To build a multi-class classification model that predicts corporate c
 5. modeling.ipynb - in this notebook we perform the actual modeling. We run vanilla sklearn classification algorithms on our dataset, and then select a few classifiers to perform hyperparameter tuning on and subsequently add to the model stack. We then run the ensemble model and evaluate its performance. 
 
 **Other**
-1. The 'input_datesets' folder contains all the non-API retrieved input data used in this project.
-2. The 'working_datasets' folder contains some datasets exported and used throughout this project,
+1. The 'input_datasets' folder contains all the non-API retrieved input data used in this project.
+2. The 'working_datasets' folder contains some datasets generated and used in this project.
 3. The 'pkl' folder contains pickle files generated and used in this project.
 
 ## The Final Model
 
-The final model applies hyper-parameter tuning to the Bootstrap Aggregation, Random Forest, Gradient Boosting, and XGBoost classifiers, and add's all of these to a model stack.
+The final model applies hyper-parameter tuning to the Bootstrap Aggregation, Random Forest, Gradient Boosting, and XGBoost classifiers, and appends these to a model stack.
 
 **Stacked Model Score: 77.25%**
 
@@ -38,5 +38,16 @@ The final model applies hyper-parameter tuning to the Bootstrap Aggregation, Ran
 
 **Random Guessing Score: 33.33%**
 
-*Unacceptable error is when the model predicts a certain risk class, but the actual risk class is on the other end of the spectrum. I.e the model predicts a certain company's credit to be low risk when it is actually high, or vice versa.*
+*Unacceptable error is when the model makes a certain class prediction, but the actual class value is on the other end of the spectrum. I.e the model predicts a certain company's credit to be low risk when it is actually high, or vice versa.*
 
+![](images/stacked_model_confusion_matrix.png)
+
+*1 - high risk*
+
+*2 - medium risk*
+
+*3 - low risk*
+
+## Future Work
+
+This entire project was an iterative process in many different aspects, i.e. trying out different dataset cleaning configurations, split sizes, model stacks, grid search parameters etc. Continued time and resources applied to research on finding the optimal configurations for all aspects of the project would surely improve the model. Other things that can help are higher computational/processing power to be able to scale the size of iterations, sourcing more data, enlisting the help of others to delegate tasks and focuses (making this a group project) etc. 
