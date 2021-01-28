@@ -1,6 +1,8 @@
 # Corporate Credit Risk Classification Model
 Objective: To build a multi-class classification model that predicts corporate credit risk levels using credit ratings as labels. 
 
+Blog: https://janabdullah96.medium.com/corporate-credit-risk-classification-model-9db86e3f2e4e
+
 ## Repo Contents
 
 **Python Modules**
