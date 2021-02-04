@@ -42,7 +42,7 @@ The final model applies hyper-parameter tuning to the Bootstrap Aggregation, Ran
 
 *Unacceptable error is when the model makes a certain class prediction, but the actual class value is on the other end of the spectrum. I.e the model predicts a certain company's credit to be low risk when it is actually high, or vice versa.*
 
-![](images/stacked_model_cf.png)
+![](images/confusion_matrix.png)
 
 *1 - high risk*
 
