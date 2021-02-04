@@ -28,13 +28,13 @@ Blog: https://janabdullah96.medium.com/corporate-credit-risk-classification-mode
 
 The final model applies hyper-parameter tuning to the Bootstrap Aggregation, Random Forest, Gradient Boosting, and XGBoost classifiers, and appends these to a model stack.
 
-**Stacked Model Score: 77.25%**
+**Stacked Model Score: 78.44%**
 
-**Unacceptable Error: 2.37%**
+**Unacceptable Error: 1.90%**
 
-**Best Individual Baseline Classifier Score: 75.36%**
+**Best Individual Baseline Classifier Score: 76.07%**
 
-**Best Individual Parameter-tuned Classifier Score: 76.77%**
+**Best Individual Parameter-tuned Classifier Score: 77.96%**
 
 **Baseline Score: 38.86%**
 
