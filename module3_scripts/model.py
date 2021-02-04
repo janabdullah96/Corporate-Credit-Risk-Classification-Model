@@ -102,7 +102,7 @@ class Model:
         self.y_pred_dict = {}
         return
     
-    def instantiate_models(self, models=__BASE_MODEL_CLASSES.keys(), display_best_params=False):
+    def instantiate_models(self, models=__BASE_MODEL_CLASSES.keys()):
         
         """
         Args:
@@ -110,15 +110,11 @@ class Model:
                 List of model classifier names
                 -refer to '__BASE_MODEL_CLASSES' class attribute for 
                  model naming conventions
-            display_best_params:
-                Boolean value to toggle display of best GridSearchCV parameters
-                (default=False). Note* would require more time as GS classifier
-                would have to be fitted first to get best parameters. 
         
         This method iterates through all the elements in 'models' 
         and instantiates each classfier using a OneVsRestClassifier
         wrapper. If a GridSearchCV parameter grid is passed for a
-        model, the GS will be performed during instantiation. 
+        model, it will be accounted for in instantiation. 
         After each instantiation, the '_instantiated_model_dict'
         instance attribute will be updated where:
             key: name of classifier
@@ -142,35 +138,34 @@ class Model:
                 }
         }
         for clf_name, classifier in classifiers_dict.items():
+
             print(f'Instantiating {clf_name}...\n')
-            try:
+            params = params_dict.get(clf_name) or {}
+            if all(len(elem)<=1 for elem in params.values()):
+                params = {k: v[0] for k, v in params.items()}
+                clf = classifier(**params)
+                print(f'Parameters: {json.dumps(params, indent=4)}\n')
+            else:
                 clf = GridSearchCV(
                     classifier(), 
-                    param_grid=params_dict.get(clf_name), 
+                    param_grid=params, 
                     scoring='accuracy',
                     cv=self.cv
                 )
-                if clf_name in self.gs_param_grid.keys():
-                    param_type = 'Grid Search Params:'
-                elif clf_name in self.__BASE_PARAM_GRID.keys():
-                    param_type = 'Static Params:'
-                else:
-                    pass
-                print(f'{param_type} {json.dumps(params_dict.get(clf_name), indent=4)}\n')
-                if display_best_params:
-                    print(
-                        f'Optimal {clf_name} params: {json.dumps(clf.fit(self.X_train, self.y_train).best_params_, indent=4)}\n'
-                    )
-            except TypeError:
-                clf = classifier()
+                print(f'Grid Search CV Parameters: {json.dumps(params, indent=4)}\n')
             self._instantiated_model_dict[clf_name] = OneVsRestClassifier(clf)
             print('='*50)
             
-    def fit_all(self):
+    def fit_all(self, display_best_gs_params=False):
         
         """
         Note* This method requires that the .instantiate_models() method
               be called on the instance object as a pre-requisite.
+        
+        Args:
+            display_best_gs_params:
+                Boolean value to toggle display of best GridSearchCV parameters
+                (default=False). 
         
         This method uses sklearn's .fit() and .predict() methods for 
         each classifier and populates:
@@ -186,13 +181,20 @@ class Model:
         
         for clf_name, model in self._instantiated_model_dict.items():
             print(f'Fitting and predicting target class with {clf_name}...')
-            self._fitted_model_dict[clf_name] = model.fit(self.X_train, self.y_train)
+            fitted_model = model.fit(self.X_train, self.y_train)
+            self._fitted_model_dict[clf_name] = fitted_model
             #generate training and test set predictions for classifier
             #data[0] is the X dataset for the set
             self.y_pred_dict[clf_name] = {
                 set_: self._fitted_model_dict[clf_name].predict(data[0]) 
                 for set_, data in self._sets_dict.items()
             }
+            if display_best_gs_params:
+                try:
+                    print(f'\nOptimal {clf_name} params: {json.dumps(fitted_model.estimators_[0].best_params_, indent=4)}\n')
+                except AttributeError:
+                    pass
+            print('='*50)
             
     def display_metrics(self):
         
