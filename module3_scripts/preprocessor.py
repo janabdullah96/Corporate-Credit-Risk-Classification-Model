@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from imblearn.over_sampling import SMOTE
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
 
 sns.set_style("darkgrid")
 
@@ -63,9 +63,8 @@ class Preprocessor:
         
         """
         Preprocesses the input data in below steps:
-
-            1. One-hot encode categorical variables
-            2. Split dataset into training and test sets
+            1. Split dataset into training and test sets
+            2. One-hot encode categorical variables
             3. Apply SMOTE resampling if applicable
             4. Use StandardScaler to scale predictor training and test sets
             
@@ -74,11 +73,6 @@ class Preprocessor:
         """
 
         print('=== Initiating pre-processing of dataset ===')
-
-        print('Applying one-hot encoding on all categorical variables...')
-        dummy_df = pd.get_dummies(self.X[self.categorical_cols])
-        self.X.drop(self.categorical_cols, axis=1, inplace=True)
-        self.X = pd.concat([self.X, dummy_df], axis=1)
         
         print('Applying train-test split on dataset...')
         print(f'\t Test set size: {self.test_size}')
@@ -92,7 +86,25 @@ class Preprocessor:
             test_size=self.test_size,
             random_state=self.random_state
         )
-
+        
+        print('Applying one-hot encoding on all categorical variables...')
+        ohe = OneHotEncoder()
+        #fit using training set
+        ohe.fit(self.X_train[self.categorical_cols])
+        ohe_exceptions_for_transformation = []
+        #transform training and test sets
+        ohe_dfs = []
+        for df in [self.X_train, self.X_test]:
+            ohe_transformed = ohe.transform(df[self.categorical_cols]).toarray()
+            ohe_columns = ['Sector_'+col for col in ohe.categories_][0]
+            ohe_exceptions_for_transformation.extend(ohe_columns)
+            df_ohe_transformed = pd.DataFrame(ohe_transformed, columns=ohe_columns)
+            df = df.drop(self.categorical_cols, axis=1)
+            df = pd.concat([df.reset_index(), df_ohe_transformed], axis=1).drop('index', axis=1)
+            ohe_dfs.append(df)
+        
+        self.X_train, self.X_test = ohe_dfs
+        
         if self.smote:
             print('Applying SMOTE resampling on training set...')
             self.X_train, self.y_train = SMOTE().fit_sample(self.X_train, self.y_train)
@@ -102,15 +114,21 @@ class Preprocessor:
         
         print('Transforming predictor training and test sets using StandardScaler...')
         print(f'\tColumns exempted from transformation: {self.transformation_exceptions}')
-        exceptions = dummy_df.columns.values.tolist() + self.transformation_exceptions
-        transform_training_df = self.X_train.drop(exceptions, axis=1)
-        transform_training_df_exception = self.X_train[exceptions]
-        transform_test_df = self.X_test.drop(exceptions, axis=1)
-        transform_test_df_exception = self.X_test[exceptions]
+        
+        exceptions = ohe_exceptions_for_transformation + self.transformation_exceptions
+        
+        train_exceptions = [col for col in self.X_train.columns if col in exceptions]
+        transform_training_df = self.X_train.drop(train_exceptions, axis=1)
+        transform_training_df_exception = self.X_train[train_exceptions]
+        
+        test_exceptions = [col for col in self.X_test.columns if col in exceptions]
+        transform_test_df = self.X_test.drop(test_exceptions, axis=1)
+        transform_test_df_exception = self.X_test[test_exceptions]
             
         scaler = StandardScaler()
+        scaler.fit(transform_training_df)
         transform_training_df = pd.DataFrame(
-            scaler.fit_transform(transform_training_df), 
+            scaler.transform(transform_training_df), 
             columns=transform_training_df.columns
         )
         transform_test_df = pd.DataFrame(
