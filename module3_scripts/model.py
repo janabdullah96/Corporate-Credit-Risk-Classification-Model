@@ -355,7 +355,7 @@ class Ensemble:
                 (Weighted as 100% accurate) (Default=[])
             method:
                 String denoting method of stacking predictions
-                Method descriptions can be found in docstrics of static methods
+                Method descriptions can be found in docstrings of static methods
         """
         
         print(
